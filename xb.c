@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
 #include <linux/input.h>
 #include <linux/uinput.h>
 
@@ -22,15 +24,19 @@ int main(){
         __u8 number;    /* axis/button number */
     };
     
-    sleep(1);
-    int fd = open("/dev/input/", O_RDONLY);
+    int fd = open("/dev/input/event3", O_RDONLY);
     struct js_event e;
 
-    int of = open ("/dev/uinput", O_WRONLY | ONONBLOCK);
+    int of = open ("/dev/uinput", O_WRONLY | O_NONBLOCK);
     struct uinput_setup usetup;
 
     if (of < 0){
-        printf("Un able to open .......\n");
+        printf("Unable to open /dev/uinput/\n");
+        return -1;
+    } 
+    else if (fd < 0){
+
+        printf("Unable to open /dev/\n");
         return -1;
     }
 
@@ -46,5 +52,17 @@ int main(){
 
     ioctl(of, UI_DEV_SETUP, &usetup);
     ioctl(of, UI_DEV_CREATE);
+
+    for (int i=0; i<=3; i++){
+        read(fd, &e, sizeof(e));
+
+        printf("----------\n");
+        printf("value --> %d\ntype --> %d\nnumber --> %d\n", e.value, e.type, e.number);
+        printf("----------\n");
+
+        sleep(1);
+    }
+
+    read(fd, &e, sizeof(e));
     return 0;
 }
